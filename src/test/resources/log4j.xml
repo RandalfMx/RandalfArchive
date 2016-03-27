@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+    
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                value="[%d{ISO8601}] %-5p %c %m %n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="DEBUG"/>
+            <param name="LevelMax" value="INFO"/>
+        </filter>
+    </appender>
+    
+    <appender name="STDERR"  class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.err" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                value="[%d{ISO8601}] %-5p %c %m %n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="WARN"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+<!--
+    <appender name="REPORT" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <param name="File" value="reportElab.txt"/>
+        
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="[%d{ISO8601}] %-5p %c %m %n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="DEBUG"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+-->    
+
+    <category name="mx.randalf">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+    
+    <!--
+    <category name="org.jboss.logging">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+    
+    <category name="org.hibernate">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+    
+    <category name="it.siav.sturzo">
+        <level value="INFO" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+        <appender-ref ref="REPORT"/>
+    </category>
+    
+    <category name="mx.gestionexsd.GestioneXsd">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+    
+    <category name="mx.img.convert.CalcImg">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+
+    <category name="mx.utility.xml">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+
+    <category name="it.siav.gea.hibernate.HibernateUtil">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+    
+    <category name="mx.xsd.GestioneXsd">
+        <level value="WARN" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="STDERR"/>
+    </category>
+-->
+</log4j:configuration>

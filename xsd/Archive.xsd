@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
+    targetNamespace="http://www.randalf.mx/archive/info" xmlns="http://www.randalf.mx/archive/info">
+
+    <xs:element name="archive">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="nome" type="xs:string"/>
+                <xs:element minOccurs="0" ref="type"/>
+                <xs:sequence minOccurs="0">
+                    <xs:element name="xmltype" type="xmltype"/>
+                    <xs:element name="xmlvalid" type="xs:boolean"/>
+                </xs:sequence>
+                <xs:element maxOccurs="unbounded" minOccurs="0" ref="archive"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="charset">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="binary"/>
+            <xs:enumeration value="utf-8"/>
+            <xs:enumeration value="us-ascii"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="xmltype">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="mets"/>
+            <xs:enumeration value="mag"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:element name="type">
+        <xs:complexType>
+            <xs:choice>
+                <xs:sequence>
+                    <xs:element name="mimetype" type="xs:string" maxOccurs="unbounded"/>
+                    <xs:element maxOccurs="unbounded" name="digest">
+                        <xs:complexType>
+                            <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                    <xs:attribute name="type" type="digestType"/>
+                                </xs:extension>
+                            </xs:simpleContent>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="size" type="xs:long"/>
+                    <xs:element name="ext" type="xs:string"/>
+                    <xs:element name="lastMod" type="xs:dateTime"/>
+                    <xs:element name="PUID" type="xs:string"/>
+                    <xs:element name="format">
+                        <xs:complexType>
+                            <xs:simpleContent>
+                                <xs:extension base="xs:string">
+                                    <xs:attribute name="version" type="xs:string"/>
+                                </xs:extension>
+                            </xs:simpleContent>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element minOccurs="0" name="charset" type="charset"/>
+                    <xs:element minOccurs="0" name="contentLocation" type="xs:string"/>
+                    <xs:element minOccurs="0" name="image">
+                        <xs:complexType>
+                            <xs:sequence>
+                                <xs:element name="height" type="xs:int"/>
+                                <xs:element name="width" type="xs:int"/>
+                                <xs:element name="ppi" type="xs:int" minOccurs="0"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:sequence>
+                <xs:element name="msgError" type="xs:string"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="digestType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="SHA-1"/>
+            <xs:enumeration value="MD5"/>
+            <xs:enumeration value="SHA-256"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>
