@@ -18,17 +18,17 @@
   	<dependency>
   		<groupId>mx.randalf.xsd</groupId>
   		<artifactId>RandalfXsd</artifactId>
-  		<version>1.0.4</version>
+  		<version>1.0.6</version>
   	</dependency>
   	<dependency>
   		<groupId>mx.randalf.tools</groupId>
   		<artifactId>RandalfTools</artifactId>
-  		<version>1.0.4</version>
+  		<version>1.0.6</version>
   	</dependency>
   	<dependency>
   		<groupId>mx.randalf.digital</groupId>
   		<artifactId>RandalfDigital</artifactId>
-  		<version>1.0.6</version>
+  		<version>1.0.9</version>
   	</dependency>
   </dependencies>
 <!--
