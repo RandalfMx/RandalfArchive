@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>mx.randalf.archive</groupId>
   <artifactId>RandalfArchive</artifactId>
-  <version>1.0.8</version>
+  <version>1.0.9</version>
   <description>Librerie utilizzzate per la identificazione e gestione delle dieverse tipologie di files</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,12 +23,22 @@
   	<dependency>
   		<groupId>mx.randalf.tools</groupId>
   		<artifactId>RandalfTools</artifactId>
-  		<version>1.0.6</version>
+  		<version>1.0.7</version>
   	</dependency>
   	<dependency>
   		<groupId>mx.randalf.digital</groupId>
   		<artifactId>RandalfDigital</artifactId>
   		<version>1.0.9</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.jwat</groupId>
+  		<artifactId>jwat-warc</artifactId>
+  		<version>1.0.4</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.jwat</groupId>
+  		<artifactId>jwat-tools</artifactId>
+  		<version>0.6.2</version>
   	</dependency>
   </dependencies>
 <!--

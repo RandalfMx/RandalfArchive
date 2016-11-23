@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Vector;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -30,6 +31,7 @@ import mx.randalf.archive.info.Type.Image;
 import mx.randalf.archive.info.Xmltype;
 import mx.randalf.tools.MD5Tools;
 import mx.randalf.tools.SHA1Tools;
+import mx.randalf.tools.SHA256Tools;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.log4j.Logger;
@@ -103,8 +105,8 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 	 * @return Risultato della ricerca
 	 * @throws CheckArchiveException
 	 */
-	public A check(File fInput, File fileTar) throws CheckArchiveException {
-		return check(fInput, fileTar, false);
+	public A check(File fInput, File fileTar, Boolean deCompEsito) throws CheckArchiveException {
+		return check(fInput, fileTar, false, deCompEsito);
 	}
 
 	/**
@@ -114,48 +116,51 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 	 * @return Risultato della ricerca
 	 * @throws CheckArchiveException
 	 */
-	public A check(File fInput, File fileTar, boolean calcImg) throws CheckArchiveException {
+	public A check(File fInput, File fileTar, boolean calcImg, Boolean deCompEsito) throws CheckArchiveException {
 		A archive = null;
 		boolean fileGz = false; 
 
 		try {
-			if (unZip){
-				if (fInput.getName().endsWith(".tgz")
-						|| fInput.getName().endsWith(".tar.gz")) {
-					fileGz = true;
-					if (fileTar== null){
-						fileTar = new File(fInput.getParentFile().getAbsolutePath()
-								+ File.separator
-								+ fInput.getName().replace(".tgz", ".tar")
-										.replace(".tar.gz", ".tar"));
-					}
-					gcUnzipStart = new GregorianCalendar();
-					try {
-						Gzip.decompress(fInput, fileTar);
-					} catch (FileNotFoundException e) {
-						unzipError = new String[] {
-								e.getMessage()
-						};
-						throw e;
-					} catch (IOException e) {
-						unzipError = new String[] {
-								e.getMessage()
-						};
-						throw e;
-					} finally {
-						gcUnzipStop = new GregorianCalendar();
+			if (deCompEsito == null || !deCompEsito.booleanValue()){
+				if (unZip){
+					if (fInput.getName().endsWith(".tgz")
+							|| fInput.getName().endsWith(".tar.gz")) {
+						fileGz = true;
+						if (fileTar== null){
+							throw new CheckArchiveException("Nome del File Tar non indicato");
+	//						fileTar = new File(fInput.getParentFile().getAbsolutePath()
+	//								+ File.separator
+	//								+ fInput.getName().replace(".tgz", ".tar")
+	//										.replace(".tar.gz", ".tar"));
+						}
+						gcUnzipStart = new GregorianCalendar();
+						try {
+							Gzip.decompress(fInput, fileTar);
+						} catch (FileNotFoundException e) {
+							unzipError = new String[] {
+									e.getMessage()
+							};
+							throw e;
+						} catch (IOException e) {
+							unzipError = new String[] {
+									e.getMessage()
+							};
+							throw e;
+						} finally {
+							gcUnzipStop = new GregorianCalendar();
+						}
 					}
 				}
+			} else {
+				fileGz = true;
 			}
 
 
 			if (fileGz){
 				this.fileOutput = fileTar;
 				archive = scan(fileTar);
-				archive.setNome(fileTar.getName());
-				addDigest(archive, 
-						MD5Tools.readMD5File(fileTar.getAbsolutePath()), 
-						SHA1Tools.readMD5File(fileTar.getAbsolutePath()));
+				archive.setNome(fileTar.getParentFile().getName()+File.separator+fileTar.getName());
+				addDigest(archive, fileTar);
 
 				checkTar(fileTar, archive.getArchive(), archive, calcImg);
 				if (removeOrgin){
@@ -166,10 +171,8 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 			}else {
 				this.fileOutput = fInput;
 				archive = scan(fInput);
-				archive.setNome(fInput.getName());
-				addDigest(archive, 
-						MD5Tools.readMD5File(fInput.getAbsolutePath()), 
-						SHA1Tools.readMD5File(fInput.getAbsolutePath()));
+				archive.setNome((fileTar==null?fInput.getAbsolutePath():fileTar.getParentFile().getName()+File.separator+fInput.getName()));
+				addDigest(archive, fInput);
 				if (fInput.getName().endsWith(".tar")){
 					checkTar(fInput, archive.getArchive(), archive, calcImg);
 				}
@@ -184,22 +187,47 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 		return archive;
 	}
 
-	private void addDigest(A archive, String md5, String sha1){
+	private void addDigest(A archive, File file) throws FileNotFoundException, NoSuchAlgorithmException, IOException{
+		String md5 = null;
+		String sha1 = null;
+		String sha256 = null;
+		try{
+			md5 = MD5Tools.readMD5File(file.getAbsolutePath());
+			sha1 = SHA1Tools.readMD5File(file.getAbsolutePath());
+			sha256 = SHA256Tools.readMD5(file.getAbsolutePath());
+			addDigest(archive, md5, sha1, sha256);
+		} catch (FileNotFoundException e) {
+			throw e;
+		} catch (NoSuchAlgorithmException e) {
+			throw e;
+		} catch (IOException e) {
+			throw e;
+		}
+	}
+
+	private void addDigest(A archive, String md5, String sha1, String sha256) {
 		Digest digest;
 
-		if (md5 != null){
-			digest = new Digest();
-			digest.setType(DigestType.MD_5);
-			digest.setValue(md5);
-			archive.getType().getDigest().add(digest);
-		}
+			if (md5 != null){
+				digest = new Digest();
+				digest.setType(DigestType.MD_5);
+				digest.setValue(md5);
+				archive.getType().getDigest().add(digest);
+			}
 
-		if (sha1 != null){
-			digest = new Digest();
-			digest.setType(DigestType.SHA_1);
-			digest.setValue(sha1);
-			archive.getType().getDigest().add(digest);
-		}
+			if (sha1 != null){
+				digest = new Digest();
+				digest.setType(DigestType.SHA_1);
+				digest.setValue(sha1);
+				archive.getType().getDigest().add(digest);
+			}
+
+			if (sha256 != null){
+				digest = new Digest();
+				digest.setType(DigestType.SHA_256);
+				digest.setValue(sha256);
+				archive.getType().getDigest().add(digest);
+			}
 
 	}
 	
@@ -218,7 +246,7 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 				tarIndexer = indexer.get(archive.getNome());
 
 				if (tarIndexer != null){
-					addDigest(archive, tarIndexer.getMd5(), tarIndexer.getSha1());
+					addDigest(archive, tarIndexer.getMd5(), tarIndexer.getSha1(), null);
 	
 					if (tarIndexer.getXmlType()!=null){
 						xmlType = Xmltype.fromValue(tarIndexer.getXmlType());
@@ -262,21 +290,32 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 		FileReader fr = null;
 		String[] nextLine;
 		Hashtable<Integer, String[]> csvResult = null;
+		Hashtable<Integer, Vector<Integer>> csvPadri = null;
+		int idPadre = 0;
+		int id = 0;
 
 		try {
 			checkDroid = new CheckDroid(fileDroid);
 			fileCsv = checkDroid.check(fInput);
 
+//			System.out.println("FileCsv: "+fileCsv);
 			fr = new FileReader(fileCsv);
 			csvReader = new CSVReader(fr);
 			csvResult = new Hashtable<Integer, String[]>();
+			csvPadri = new Hashtable<Integer, Vector<Integer>>();
 			while ((nextLine = csvReader.readNext()) != null) {
 				if (!nextLine[0].equals("ID")){
-					csvResult.put(new Integer(nextLine[0]), nextLine);
+					id = new Integer(nextLine[0]);
+					idPadre = new Integer(nextLine[1]);
+					csvResult.put(id, nextLine);
+					if (csvPadri.get(idPadre)== null){
+						csvPadri.put(idPadre, new Vector<Integer>());
+					}
+					csvPadri.get(idPadre).add(id);
 				}
 			}
 			
-			archive = scan(csvResult, new Integer("1"));
+			archive = scan(csvResult, csvPadri, new Integer("1"));
 		} catch (FileNotFoundException e) {
 			log.error(e.getMessage(), e);
 			throw new CheckArchiveException(e.getMessage(),e);
@@ -303,23 +342,36 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 		return archive;
 	}
 
-	private A scan(Hashtable<Integer, String[]> csvResult, Integer parent) throws CheckArchiveException{
+	private A scan(Hashtable<Integer, String[]> csvResult, Hashtable<Integer, Vector<Integer>> csvPadri, Integer parent) throws CheckArchiveException{
 		A archive = null;
 		List<Integer> keys = null;
-		String[] value = null;
+//		String[] value = null;
+		String[] first = null;
+		Vector<Integer> figli = null;
 
 		try {
 			keys = Collections.list(csvResult.keys());
 			Collections.sort(keys);
 
-			archive = initArchive(csvResult.get(parent));
+			first = csvResult.get(parent);
+			if (first == null){
+				parent =keys.get(0);
+				first = csvResult.get(keys.get(0));
+			}
+			archive = initArchive(first);
 			
-			for(Integer key:keys){
-				value = csvResult.get(key);
-				if (value[1].equals(parent.toString())){
-					archive.getArchive().add(scan(csvResult, new Integer(value[0])));
+			if (csvPadri.get(new Integer(first[0]))!= null){
+				figli = csvPadri.get(new Integer(first[0]));
+				for (int x=0; x<figli.size(); x++){
+					archive.getArchive().add(scan(csvResult, csvPadri, figli.get(x)));
 				}
 			}
+//			for(Integer key:keys){
+//				value = csvResult.get(key);
+//				if (value[1].equals(parent.toString())){
+//					archive.getArchive().add(scan(csvResult, new Integer(value[0])));
+//				}
+//			}
 		} catch (NumberFormatException e) {
 			log.error(e.getMessage(), e);
 			throw new CheckArchiveException(e.getMessage(), e);
@@ -380,6 +432,9 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 			log.error(e.getMessage(),e);
 			throw new CheckArchiveException(e.getMessage(), e);
 		} catch (DatatypeConfigurationException e) {
+			log.error(e.getMessage(),e);
+			throw new CheckArchiveException(e.getMessage(), e);
+		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			throw new CheckArchiveException(e.getMessage(), e);
 		}
