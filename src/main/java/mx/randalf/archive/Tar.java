@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import mx.randalf.archive.exception.TarException;
+import mx.randalf.archive.info.Xmltype;
 import mx.randalf.digital.img.reader.CalcImg;
 import mx.randalf.tools.MD5Tools;
 import mx.randalf.tools.SHA1Tools;
@@ -131,8 +132,14 @@ public class Tar {
 					if (calcImg && isImg(fTmp.getName().toLowerCase())){
 						calcImg(fTmp, tarIndexer);
 					}
-					if (fTmp.getName().toLowerCase().endsWith(".xml")) {
+					if (fTmp.getName().toLowerCase().endsWith(".xml") ||
+							fTmp.getName().toLowerCase().endsWith(".premis")) {
+//						System.out.print("File: "+fTmp.getName());
 						tarIndexer.setXmlType(checkXml(fTmp));
+//						System.out.println(" XmlType: "+tarIndexer.getXmlType());
+					}
+					if (fTmp.getName().toLowerCase().equals("bagit.txt")){
+						tarIndexer.setXmlType(Xmltype.BAGIT.value());
 					}
 					fTmp.delete();
 				}
@@ -195,17 +202,34 @@ public class Tar {
 		BufferedReader br = null;
 		String ris = null;
 		String line = null;
+		String firstLine = null;
+		int pos = 0;
 
 		try {
 			fr = new FileReader(fXml);
 			br = new BufferedReader(fr);
-			br.readLine();
+			firstLine = br.readLine();
 
 			line = br.readLine();
+			if (line ==null){
+				firstLine = firstLine.substring(1);
+				pos = firstLine.indexOf("<");
+				if (pos >-1){
+					line = firstLine.substring(pos);
+				}
+			} 
 			if (line.trim().toLowerCase().startsWith("<mets:mets")) {
-				ris = "mets";
+				ris = Xmltype.METS.value();
 			} else if (line.trim().toLowerCase().startsWith("<metadigit")) {
-				ris = "mag";
+				ris = Xmltype.MAG.value();
+			} else if (line.trim().toLowerCase().startsWith("<premis")) {
+				ris = Xmltype.PREMIS.value();
+			} else if (line.trim().toLowerCase().startsWith("<agent")) {
+				ris = Xmltype.AGENT.value();
+			} else if (line.trim().toLowerCase().startsWith("<rights")) {
+				ris = Xmltype.RIGHTS.value();
+			} else if (line.trim().toLowerCase().startsWith("<event")) {
+				ris = Xmltype.EVENT.value();
 			}
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {

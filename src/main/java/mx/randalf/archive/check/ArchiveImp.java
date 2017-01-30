@@ -10,6 +10,7 @@ import mx.randalf.archive.info.Archive;
  *
  */
 public abstract class ArchiveImp extends Archive {
+	String typeObject = null;
 
 	/**
 	 * 
@@ -18,4 +19,18 @@ public abstract class ArchiveImp extends Archive {
 	}
 
 	public abstract String getID();
+
+	/**
+	 * @return the typeObject
+	 */
+	public String getTypeObject() {
+		return typeObject;
+	}
+
+	/**
+	 * @param typeObject the typeObject to set
+	 */
+	public void setTypeObject(String typeObject) {
+		this.typeObject = typeObject;
+	}
 }

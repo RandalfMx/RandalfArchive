@@ -35,7 +35,7 @@ public class CheckArchiveTest {
 				}
 			};
 			check.setUnZip(true);
-			archive = check.check(new File("/Users/massi/bin/droid/pippo/CF000265884.tar.gz"), null,null);
+			archive = check.check(new File("/Users/massi/bin/droid/pippo/CF000265884.tar.gz"), null,null,true);
 			
 			if (archive != null){
 				printArchive(archive, "");

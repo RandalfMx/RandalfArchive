@@ -26,6 +26,12 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="mets"/>
             <xs:enumeration value="mag"/>
+            <xs:enumeration value="premis"/>
+            <xs:enumeration value="agent"/>
+            <xs:enumeration value="rights"/>
+            <xs:enumeration value="bagit"/>
+            <xs:enumeration value="warc"/>
+            <xs:enumeration value="event"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:element name="type">
