@@ -36,9 +36,10 @@ public class TarTest {
 		TarIndexer tarIndexer = null;
 		Enumeration<String> keys = null;
 		String key = null;
+		String file = "/Users/massi/bin/droid/pippo/CF000265884.tar";
 		
 		try {
-			ris = Tar.indexer(new File("/Users/massi/bin/droid/pippo/CF000265884.tar"), false);
+			ris = Tar.indexer(new File(file), false);
 			keys = ris.keys();
 			while (keys.hasMoreElements()){
 				key = keys.nextElement();

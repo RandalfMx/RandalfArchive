@@ -23,6 +23,7 @@ import mx.randalf.archive.TarIndexer;
 import mx.randalf.archive.check.droid.CheckDroid;
 import mx.randalf.archive.check.droid.DroidKey;
 import mx.randalf.archive.check.exception.CheckArchiveException;
+import mx.randalf.archive.check.warc.CheckWarc;
 import mx.randalf.archive.info.Archive;
 import mx.randalf.archive.info.DigestType;
 import mx.randalf.archive.info.Type;
@@ -129,7 +130,8 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 				if (unZip){
 					if (decompressRequired){
 						if (fInput.getName().endsWith(".tgz")
-								|| fInput.getName().endsWith(".tar.gz")) {
+								|| fInput.getName().endsWith(".tar.gz")
+								|| fInput.getName().endsWith(".gz")) {
 							fileGz = true;
 							if (fileTar== null){
 								throw new CheckArchiveException("Nome del File Tar non indicato");
@@ -172,6 +174,10 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 				archive = scan(fileTar);
 				archive.setNome(fileTar.getParentFile().getName()+File.separator+fileTar.getName());
 				addDigest(archive, fileTar);
+				if (fileTar.getName().endsWith(".warc")){
+					archive.setXmltype(Xmltype.WARC);
+					archive.setXmlvalid(Boolean.TRUE);
+				}
 
 				checkTar(fileTar, archive.getArchive(), archive, calcImg);
 				if (removeOrgin){
@@ -184,7 +190,14 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 				archive = scan(fInput);
 				archive.setNome((fileTar==null?fInput.getAbsolutePath():fileTar.getParentFile().getName()+File.separator+fInput.getName()));
 				addDigest(archive, fInput);
-				if (fInput.getName().endsWith(".tar")){
+				if (fileTar != null &&
+						fileTar.getName() != null &&
+						fileTar.getName().endsWith(".warc")){
+					archive.setXmltype(Xmltype.WARC);
+					archive.setXmlvalid(Boolean.TRUE);
+				}
+
+				if (fInput.getName().endsWith(".tar") || fInput.getName().endsWith(".warc")){
 					checkTar(fInput, archive.getArchive(), archive, calcImg);
 				}
 			}
@@ -245,13 +258,17 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 	}
 	
 	private void checkTar(File fileTar, List<Archive> list, A archiveTar, boolean calcImg) throws CheckArchiveException{
-		Hashtable<String, TarIndexer> indexer;
+		Hashtable<String, TarIndexer> indexer = null;
 
 		try {
-			indexer = Tar.indexer(fileTar, calcImg);
-			
-			checkTar(null, list, indexer, archiveTar);
-			
+			if (fileTar.getName().endsWith(".tar")){
+				indexer = Tar.indexer(fileTar, calcImg);
+			} else if (fileTar.getName().endsWith(".warc")){
+				indexer = CheckWarc.indexer(fileTar, calcImg);
+			}
+			if (indexer != null){
+				checkTar(null, list, indexer, archiveTar, fileTar.getName().endsWith(".warc"));
+			}
 		} catch (FileNotFoundException e) {
 			throw new CheckArchiveException(e.getMessage(), e);
 		} catch (NoSuchAlgorithmException e) {
@@ -266,7 +283,7 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void checkTar(String folder, List<Archive> list, Hashtable<String, TarIndexer> indexer, A archiveTar){
+	private void checkTar(String folder, List<Archive> list, Hashtable<String, TarIndexer> indexer, A archiveTar, boolean isWarc){
 		TarIndexer tarIndexer;
 		A archive;
 		String search = null;
@@ -280,10 +297,22 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 			} else {
 				search = folder+File.separator+archive.getNome();
 			}
-			tarIndexer = indexer.get(search);
+			if (isWarc){
+				tarIndexer = indexer.get("http://"+search);
+				if (tarIndexer == null){
+					tarIndexer = indexer.get("https://"+search);
+					if (tarIndexer != null){
+						archive.setProtocol("https://");
+					}
+				} else {
+					archive.setProtocol("http://");
+				}
+			} else {
+				tarIndexer = indexer.get(search);
+			}
 
 			if (tarIndexer != null){
-				addDigest(archive, tarIndexer.getMd5(), tarIndexer.getSha1(), null);
+				addDigest(archive, tarIndexer.getMd5(), tarIndexer.getSha1(), tarIndexer.getSha256());
 
 				if (tarIndexer.getXmlType()!=null){
 					xmlType = Xmltype.fromValue(tarIndexer.getXmlType());
@@ -307,7 +336,7 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 			
 			if (archive.getArchive() != null && 
 					archive.getArchive().size()>0){
-				checkTar(search, archive.getArchive(), indexer, archiveTar);
+				checkTar(search, archive.getArchive(), indexer, archiveTar, isWarc);
 			}
 		}
 	}
@@ -438,8 +467,11 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 				type.setFormat(format);
 			}
 
-			df = DatatypeFactory.newInstance();
-			type.setLastMod(df.newXMLGregorianCalendar(csv[DroidKey.LAST_MODIFIED.value()]));
+			if (csv[DroidKey.LAST_MODIFIED.value()] != null &&
+					!csv[DroidKey.LAST_MODIFIED.value()].trim().equals("")){
+				df = DatatypeFactory.newInstance();
+				type.setLastMod(df.newXMLGregorianCalendar(csv[DroidKey.LAST_MODIFIED.value()]));
+			}
 
 			type.setPUID(csv[DroidKey.PUID.value()]);
 

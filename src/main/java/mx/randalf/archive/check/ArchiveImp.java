@@ -11,6 +11,7 @@ import mx.randalf.archive.info.Archive;
  */
 public abstract class ArchiveImp extends Archive {
 	String typeObject = null;
+	String protocol = null;
 
 	/**
 	 * 
@@ -32,5 +33,19 @@ public abstract class ArchiveImp extends Archive {
 	 */
 	public void setTypeObject(String typeObject) {
 		this.typeObject = typeObject;
+	}
+
+	/**
+	 * @return the protocol
+	 */
+	public String getProtocol() {
+		return protocol;
+	}
+
+	/**
+	 * @param protocol the protocol to set
+	 */
+	public void setProtocol(String protocol) {
+		this.protocol = protocol;
 	}
 }

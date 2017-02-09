@@ -35,7 +35,9 @@ public class CheckArchiveTest {
 				}
 			};
 			check.setUnZip(true);
-			archive = check.check(new File("/Users/massi/bin/droid/pippo/CF000265884.tar.gz"), null,null,true);
+			archive = check.check(new File("/mnt/volume1/tmp/test/20140924-unimi.amonline.warc.gz"), 
+					new File("/mnt/volume1/tmp/test/20140924-unimi.amonline.warc"),
+					null,true);
 			
 			if (archive != null){
 				printArchive(archive, "");

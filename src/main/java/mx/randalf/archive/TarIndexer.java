@@ -20,6 +20,8 @@ public class TarIndexer {
 
 	private String sha1;
 
+	private String sha256;
+
 	private String md5;
 
 	private String xmlType;
@@ -100,6 +102,20 @@ public class TarIndexer {
 
 	public void setDpi(BigInteger dpi) {
 		this.dpi = dpi;
+	}
+
+	/**
+	 * @return the sha256
+	 */
+	public String getSha256() {
+		return sha256;
+	}
+
+	/**
+	 * @param sha256 the sha256 to set
+	 */
+	public void setSha256(String sha256) {
+		this.sha256 = sha256;
 	}
 
 }

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>mx.randalf.archive</groupId>
   <artifactId>RandalfArchive</artifactId>
-  <version>1.0.10</version>
+  <version>1.0.11</version>
   <description>Librerie utilizzzate per la identificazione e gestione delle dieverse tipologie di files</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

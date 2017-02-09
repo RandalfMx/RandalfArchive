@@ -19,12 +19,6 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 
-import mx.randalf.archive.exception.TarException;
-import mx.randalf.archive.info.Xmltype;
-import mx.randalf.digital.img.reader.CalcImg;
-import mx.randalf.tools.MD5Tools;
-import mx.randalf.tools.SHA1Tools;
-
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -32,6 +26,13 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.Logger;
 import org.im4java.core.InfoException;
+
+import mx.randalf.archive.exception.TarException;
+import mx.randalf.archive.info.Xmltype;
+import mx.randalf.digital.img.reader.CalcImg;
+import mx.randalf.tools.MD5Tools;
+import mx.randalf.tools.SHA1Tools;
+import mx.randalf.tools.SHA256Tools;
 
 /**
  * @author massi
@@ -128,6 +129,7 @@ public class Tar {
 
 					tarIndexer.setSha1(SHA1Tools.readMD5File(fTmp.getAbsolutePath()));
 					tarIndexer.setMd5(MD5Tools.readMD5File(fTmp.getAbsolutePath()));
+					tarIndexer.setSha256(SHA256Tools.readMD5(fTmp.getAbsolutePath()));
 
 					if (calcImg && isImg(fTmp.getName().toLowerCase())){
 						calcImg(fTmp, tarIndexer);
@@ -167,6 +169,7 @@ public class Tar {
 		}
 		return ris;
 	}
+
 	private static void calcImg(File fImg, TarIndexer tarIndexer) throws InfoException{
 		CalcImg calcImg = null;
 
@@ -230,6 +233,8 @@ public class Tar {
 				ris = Xmltype.RIGHTS.value();
 			} else if (line.trim().toLowerCase().startsWith("<event")) {
 				ris = Xmltype.EVENT.value();
+			} else if (line.trim().toLowerCase().startsWith("<mdregistroingressi")) {
+				ris = Xmltype.REGISTRO.value();
 			}
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {

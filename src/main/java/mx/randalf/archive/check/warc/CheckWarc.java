@@ -6,13 +6,21 @@ package mx.randalf.archive.check.warc;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.InetAddress;
+import java.nio.file.Files;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.utils.IOUtils;
+import org.im4java.core.InfoException;
 import org.jwat.common.ContentType;
 import org.jwat.common.Diagnosis;
 import org.jwat.common.DiagnosisType;
@@ -26,6 +34,11 @@ import org.jwat.warc.WarcHeader;
 import org.jwat.warc.WarcReader;
 import org.jwat.warc.WarcReaderFactory;
 import org.jwat.warc.WarcRecord;
+
+import mx.randalf.archive.TarIndexer;
+import mx.randalf.tools.MD5Tools;
+import mx.randalf.tools.SHA1Tools;
+import mx.randalf.tools.SHA256Tools;
 
 /**
  * @author massi
@@ -46,6 +59,80 @@ public class CheckWarc {
 			checkWarc = new CheckWarc();
 			checkWarc.read(args[0]);
 		}
+	}
+
+	public static Hashtable<String, TarIndexer> indexer(File fileTar, boolean calcImg) throws FileNotFoundException,
+			ArchiveException, IOException, NoSuchAlgorithmException, InfoException {
+		InputStream is = null;
+		WarcReader reader = null;
+		WarcRecord record = null;
+		File dTmp = null;
+		File fTmp = null;
+		Hashtable<String, TarIndexer> ris = null;
+		TarIndexer tarIndexer = null;
+
+		try {
+			dTmp = Files.createTempDirectory("TarIndexer-").toFile();
+			dTmp.mkdirs();
+			
+			is = new FileInputStream(fileTar);
+
+			reader = WarcReaderFactory.getReader(is);
+
+			ris = new Hashtable<String, TarIndexer>();
+			while ((record = reader.getNextRecord()) != null) {
+				if (record.header.contentLength>0){
+					tarIndexer = new TarIndexer();
+	
+					if (record.header.warcFilename != null &&
+							!record.header.warcFilename.trim().equals("")){
+						tarIndexer.setName(record.header.warcFilename);
+					} else {
+						tarIndexer.setName(record.header.warcTargetUriStr);
+					}
+					tarIndexer.setOffset(record.getStartOffset());
+					tarIndexer.setSize(record.header.contentLength);
+	
+					fTmp = new File(dTmp.getAbsolutePath() + File.separator
+							+ "tempInfo");
+					if (!fTmp.getParentFile().exists()){
+						if (!fTmp.getParentFile().mkdirs()){
+							throw new FileNotFoundException("Problemi nella creazione della cartella ["+fTmp.getParentFile().getAbsolutePath()+"]");
+						}
+					}
+					OutputStream outputFileStream = new FileOutputStream(fTmp);
+					
+					IOUtils.copy(record.getPayloadContent(), outputFileStream);
+					outputFileStream.flush();
+					outputFileStream.close();
+	
+					tarIndexer.setSha1(SHA1Tools.readMD5File(fTmp.getAbsolutePath()));
+					tarIndexer.setMd5(MD5Tools.readMD5File(fTmp.getAbsolutePath()));
+					tarIndexer.setSha256(SHA256Tools.readMD5(fTmp.getAbsolutePath()));
+					fTmp.delete();
+					ris.put(tarIndexer.getName(), tarIndexer);
+				}
+			}
+			dTmp.delete();
+		} catch (FileNotFoundException e) {
+			throw e;
+		} catch (IOException e) {
+			throw e;
+		} catch (NoSuchAlgorithmException e) {
+			throw e;
+		} finally {
+			try {
+				if (reader != null){
+					reader.close();
+				}
+				if (is != null){
+					is.close();
+				}
+			} catch (IOException e) {
+				throw e;
+			}
+		}
+		return ris;
 	}
 
 	public void read(String warcFile) {
