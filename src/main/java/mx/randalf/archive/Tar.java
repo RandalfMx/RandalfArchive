@@ -221,7 +221,7 @@ public class Tar {
 					line = firstLine.substring(pos);
 				}
 			} 
-			if (line.trim().toLowerCase().startsWith("<mets:mets")) {
+			if (line.trim().toLowerCase().startsWith("<mets")) {
 				ris = Xmltype.METS.value();
 			} else if (line.trim().toLowerCase().startsWith("<metadigit")) {
 				ris = Xmltype.MAG.value();
