@@ -33,12 +33,13 @@ import mx.randalf.digital.img.reader.CalcImg;
 import mx.randalf.tools.MD5Tools;
 import mx.randalf.tools.SHA1Tools;
 import mx.randalf.tools.SHA256Tools;
+import mx.randalf.xsd.exception.XsdException;
 
 /**
  * @author massi
  * 
  */
-public class Tar {
+public abstract class Tar {
 
 	private static Logger log = Logger.getLogger(Tar.class);
 
@@ -48,7 +49,7 @@ public class Tar {
 	public Tar() {
 	}
 
-	public static List<File> decompress(File inputFile, File outputDir)
+	public List<File> decompress(File inputFile, File outputDir)
 			throws FileNotFoundException, IOException, ArchiveException {
 
 		log.info(String.format("Untaring %s to dir %s.",
@@ -89,8 +90,8 @@ public class Tar {
 		return untaredFiles;
 	}
 
-	public static Hashtable<String, TarIndexer> indexer(File fileTar, boolean calcImg) throws FileNotFoundException,
-			ArchiveException, IOException, NoSuchAlgorithmException, InfoException {
+	public Hashtable<String, TarIndexer> indexer(File fileTar, boolean calcImg) throws FileNotFoundException,
+			ArchiveException, IOException, NoSuchAlgorithmException, InfoException, XsdException {
 		InputStream is = null;
 		TarArchiveInputStream debInputStream = null;
 		TarArchiveEntry entry = null;
@@ -140,8 +141,9 @@ public class Tar {
 						tarIndexer.setXmlType(checkXml(fTmp));
 //						System.out.println(" XmlType: "+tarIndexer.getXmlType());
 					}
-					if (fTmp.getName().toLowerCase().equals("bagit.txt")){
+					if (fTmp.getName().toLowerCase().equals("bag-info.txt")){
 						tarIndexer.setXmlType(Xmltype.BAGIT.value());
+						tarIndexer.setIdDepositante(checkBagInfo(fTmp));
 					}
 					fTmp.delete();
 				}
@@ -158,6 +160,8 @@ public class Tar {
 			throw e;
 		} catch (InfoException e) {
 			throw e;
+		} catch (XsdException e) {
+			throw e;
 		} finally {
 			try {
 				if (debInputStream != null){
@@ -170,7 +174,40 @@ public class Tar {
 		return ris;
 	}
 
-	private static void calcImg(File fImg, TarIndexer tarIndexer) throws InfoException{
+	private String checkBagInfo(File fTmp) throws FileNotFoundException, IOException { 
+		FileReader fr = null;
+		BufferedReader br = null;
+		String line = null;
+		String idDepositante = null;
+
+		try {
+			fr = new FileReader(fTmp);
+			br = new BufferedReader(fr);
+			while ((line =br.readLine())!= null){
+				if (line.trim().startsWith("BNCF-user-id:")){
+					idDepositante = line.replace("BNCF-user-id:", "").trim();
+				}
+			}
+		} catch (FileNotFoundException e) {
+			throw e;
+		} catch (IOException e) {
+			throw e;
+		}finally {
+			try {
+				if (br != null){
+					br.close();
+				}
+				if(fr != null){
+					fr.close();
+				}
+			} catch (IOException e) {
+				throw e;
+			}
+		}
+		return idDepositante;
+	}
+
+	private void calcImg(File fImg, TarIndexer tarIndexer) throws InfoException{
 		CalcImg calcImg = null;
 
 		try {
@@ -187,7 +224,7 @@ public class Tar {
 		}
 	}
 
-	private static boolean isImg(String file){
+	private boolean isImg(String file){
 		boolean ris = false;
 		if (file.endsWith(".jp2") ||
 				file.endsWith(".jpg") ||
@@ -200,7 +237,7 @@ public class Tar {
 		return ris;
 	}
 
-	private static String checkXml(File fXml) {
+	private String checkXml(File fXml) throws FileNotFoundException, IOException, XsdException {
 		FileReader fr = null;
 		BufferedReader br = null;
 		String ris = null;
@@ -236,8 +273,15 @@ public class Tar {
 			} else if (line.trim().toLowerCase().startsWith("<mdregistroingressi")) {
 				ris = Xmltype.REGISTRO.value();
 			}
+			if (ris != null){
+				validateXsd(fXml, ris);
+			}
 		} catch (FileNotFoundException e) {
+			throw e;
 		} catch (IOException e) {
+			throw e;
+		} catch (XsdException e) {
+			throw e;
 		} finally {
 			try {
 				if (br != null) {
@@ -247,12 +291,15 @@ public class Tar {
 					fr.close();
 				}
 			} catch (IOException e) {
+				throw e;
 			}
 		}
 		return ris;
 	}
 
-	public static OutputStream read(File fileTar, int offset, int length) throws TarException{
+	protected abstract void validateXsd(File fXml, String ris) throws XsdException;
+
+	public OutputStream read(File fileTar, int offset, int length) throws TarException{
 		FileInputStream is = null;
 		TarArchiveInputStream debInputStream = null;
 		

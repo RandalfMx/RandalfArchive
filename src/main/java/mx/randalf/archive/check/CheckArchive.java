@@ -36,6 +36,7 @@ import mx.randalf.tools.SHA1Tools;
 import mx.randalf.tools.SHA256Tools;
 import mx.randalf.tools.Utils;
 import mx.randalf.tools.exception.UtilException;
+import mx.randalf.xsd.exception.XsdException;
 
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.log4j.Logger;
@@ -50,7 +51,7 @@ import au.com.bytecode.opencsv.CSVReader;
  * @author massi
  * 
  */
-public abstract class CheckArchive<A extends ArchiveImp> {
+public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 
 	/**
 	 * Variabile utilizzata per loggare l'applicazione
@@ -101,6 +102,12 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 	 * @return
 	 */
 	public abstract A initArchive();
+
+	/**
+	 * Metodo da implementare per l'inizializzare l'oggetto Archive
+	 * @return
+	 */
+	public abstract T initTar();
 
 	/**
 	 * Metodo utilizzato per iniziare la verifica del File
@@ -259,10 +266,12 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 	
 	private void checkTar(File fileTar, List<Archive> list, A archiveTar, boolean calcImg) throws CheckArchiveException{
 		Hashtable<String, TarIndexer> indexer = null;
+		T tar = null;
 
 		try {
 			if (fileTar.getName().endsWith(".tar")){
-				indexer = Tar.indexer(fileTar, calcImg);
+				tar = initTar();
+				indexer = tar.indexer(fileTar, calcImg);
 			} else if (fileTar.getName().endsWith(".warc")){
 				indexer = CheckWarc.indexer(fileTar, calcImg);
 			}
@@ -278,6 +287,8 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 		} catch (IOException e) {
 			throw new CheckArchiveException(e.getMessage(), e);
 		} catch (InfoException e) {
+			throw new CheckArchiveException(e.getMessage(), e);
+		} catch (XsdException e) {
 			throw new CheckArchiveException(e.getMessage(), e);
 		}
 	}
@@ -332,6 +343,9 @@ public abstract class CheckArchive<A extends ArchiveImp> {
 					archive.getType().setImage(image);
 				}
 				archive.getType().setContentLocation(Long.toString(tarIndexer.getOffset()));
+				if (tarIndexer.getIdDepositante() != null){
+					archive.setIdDepositante(tarIndexer.getIdDepositante());
+				}
 			}
 			
 			if (archive.getArchive() != null && 

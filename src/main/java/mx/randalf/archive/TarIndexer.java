@@ -32,6 +32,8 @@ public class TarIndexer {
 
 	private BigInteger dpi;
 
+	private String idDepositante;
+
 	public String getName() {
 		return name;
 	}
@@ -116,6 +118,17 @@ public class TarIndexer {
 	 */
 	public void setSha256(String sha256) {
 		this.sha256 = sha256;
+	}
+
+	public void setIdDepositante(String idDepositante) {
+		this.idDepositante = idDepositante;
+	}
+
+	/**
+	 * @return the idDepositante
+	 */
+	public String getIdDepositante() {
+		return idDepositante;
 	}
 
 }

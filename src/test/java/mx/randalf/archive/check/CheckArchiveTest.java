@@ -5,6 +5,7 @@ package mx.randalf.archive.check;
 
 import java.io.File;
 
+import mx.randalf.archive.Tar;
 import mx.randalf.archive.check.exception.CheckArchiveException;
 
 /**
@@ -23,15 +24,20 @@ public class CheckArchiveTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		CheckArchive<ArchiveImpTest> check = null;
+		CheckArchive<ArchiveImpTest, Tar> check = null;
 		ArchiveImpTest archive = null;
 		
 		try {
-			check = new CheckArchive<ArchiveImpTest>("/Users/massi/bin/droid/droid.sh") {
+			check = new CheckArchive<ArchiveImpTest, Tar>("/Users/massi/bin/droid/droid.sh") {
 				
 				@Override
 				public ArchiveImpTest initArchive() {
 					return new ArchiveImpTest();
+				}
+
+				@Override
+				public Tar initTar() {
+					return null;
 				}
 			};
 			check.setUnZip(true);

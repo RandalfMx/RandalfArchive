@@ -12,6 +12,7 @@
                     <xs:element name="xmlvalid" type="xs:boolean"/>
                 </xs:sequence>
                 <xs:element maxOccurs="unbounded" minOccurs="0" ref="archive"/>
+                <xs:element minOccurs="0" name="idDepositante" type="xs:string"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

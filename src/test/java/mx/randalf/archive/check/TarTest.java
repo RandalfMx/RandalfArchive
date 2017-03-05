@@ -15,6 +15,7 @@ import org.im4java.core.InfoException;
 
 import mx.randalf.archive.Tar;
 import mx.randalf.archive.TarIndexer;
+import mx.randalf.xsd.exception.XsdException;
 
 /**
  * @author massi
@@ -37,9 +38,18 @@ public class TarTest {
 		Enumeration<String> keys = null;
 		String key = null;
 		String file = "/Users/massi/bin/droid/pippo/CF000265884.tar";
+		Tar tar = null;
 		
 		try {
-			ris = Tar.indexer(new File(file), false);
+			tar = new Tar() {
+				
+				@Override
+				protected void validateXsd(File fXml, String ris) throws XsdException {
+					// TODO Auto-generated method stub
+					
+				}
+			};
+			ris = tar.indexer(new File(file), false);
 			keys = ris.keys();
 			while (keys.hasMoreElements()){
 				key = keys.nextElement();
@@ -63,6 +73,8 @@ public class TarTest {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (InfoException e) {
+			e.printStackTrace();
+		} catch (XsdException e) {
 			e.printStackTrace();
 		}
 	}
