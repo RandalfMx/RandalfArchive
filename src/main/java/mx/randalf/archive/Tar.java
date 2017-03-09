@@ -29,6 +29,7 @@ import org.im4java.core.InfoException;
 
 import mx.randalf.archive.exception.TarException;
 import mx.randalf.archive.info.Xmltype;
+import mx.randalf.archive.tools.Folder;
 import mx.randalf.digital.img.reader.CalcImg;
 import mx.randalf.tools.MD5Tools;
 import mx.randalf.tools.SHA1Tools;
@@ -52,8 +53,7 @@ public abstract class Tar {
 	public List<File> decompress(File inputFile, File outputDir)
 			throws FileNotFoundException, IOException, ArchiveException {
 
-		log.info(String.format("Untaring %s to dir %s.",
-				inputFile.getAbsolutePath(), outputDir.getAbsolutePath()));
+		log.info(String.format("Untaring %s to dir %s.", inputFile.getAbsolutePath(), outputDir.getAbsolutePath()));
 
 		List<File> untaredFiles = new LinkedList<File>();
 		InputStream is = new FileInputStream(inputFile);
@@ -63,22 +63,16 @@ public abstract class Tar {
 		while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
 			File outputFile = new File(outputDir, entry.getName());
 			if (entry.isDirectory()) {
-				log.info(String.format(
-						"Attempting to write output directory %s.",
-						outputFile.getAbsolutePath()));
+				log.info(String.format("Attempting to write output directory %s.", outputFile.getAbsolutePath()));
 				if (!outputFile.exists()) {
-					log.info(String.format(
-							"Attempting to create output directory %s.",
-							outputFile.getAbsolutePath()));
+					log.info(String.format("Attempting to create output directory %s.", outputFile.getAbsolutePath()));
 					if (!outputFile.mkdirs()) {
-						throw new IllegalStateException(String.format(
-								"Couldn't create directory %s.",
-								outputFile.getAbsolutePath()));
+						throw new IllegalStateException(
+								String.format("Couldn't create directory %s.", outputFile.getAbsolutePath()));
 					}
 				}
 			} else {
-				log.info(String.format("Creating output file %s.",
-						outputFile.getAbsolutePath()));
+				log.info(String.format("Creating output file %s.", outputFile.getAbsolutePath()));
 				OutputStream outputFileStream = new FileOutputStream(outputFile);
 				IOUtils.copy(debInputStream, outputFileStream);
 				outputFileStream.close();
@@ -104,8 +98,7 @@ public abstract class Tar {
 			dTmp = Files.createTempDirectory("TarIndexer-").toFile();
 			dTmp.mkdirs();
 			is = new FileInputStream(fileTar);
-			debInputStream = (TarArchiveInputStream) new ArchiveStreamFactory()
-					.createArchiveInputStream("tar", is);
+			debInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", is);
 
 			ris = new Hashtable<String, TarIndexer>();
 			while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
@@ -115,12 +108,12 @@ public abstract class Tar {
 				tarIndexer.setOffset(debInputStream.getBytesRead());
 				tarIndexer.setSize(entry.getSize());
 
-				fTmp = new File(dTmp.getAbsolutePath() + File.separator
-						+ entry.getName());
-				if (!entry.isDirectory()){
-					if (!fTmp.getParentFile().exists()){
-						if (!fTmp.getParentFile().mkdirs()){
-							throw new FileNotFoundException("Problemi nella creazione della cartella ["+fTmp.getParentFile().getAbsolutePath()+"]");
+				fTmp = new File(dTmp.getAbsolutePath() + File.separator + entry.getName());
+				if (!entry.isDirectory()) {
+					if (!fTmp.getParentFile().exists()) {
+						if (!fTmp.getParentFile().mkdirs()) {
+							throw new FileNotFoundException("Problemi nella creazione della cartella ["
+									+ fTmp.getParentFile().getAbsolutePath() + "]");
 						}
 					}
 					OutputStream outputFileStream = new FileOutputStream(fTmp);
@@ -132,16 +125,17 @@ public abstract class Tar {
 					tarIndexer.setMd5(MD5Tools.readMD5File(fTmp.getAbsolutePath()));
 					tarIndexer.setSha256(SHA256Tools.readMD5(fTmp.getAbsolutePath()));
 
-					if (calcImg && isImg(fTmp.getName().toLowerCase())){
+					if (calcImg && isImg(fTmp.getName().toLowerCase())) {
 						calcImg(fTmp, tarIndexer);
 					}
-					if (fTmp.getName().toLowerCase().endsWith(".xml") ||
-							fTmp.getName().toLowerCase().endsWith(".premis")) {
-//						System.out.print("File: "+fTmp.getName());
+					if (fTmp.getName().toLowerCase().endsWith(".xml")
+							|| fTmp.getName().toLowerCase().endsWith(".premis")) {
+						// System.out.print("File: "+fTmp.getName());
 						tarIndexer.setXmlType(checkXml(fTmp));
-//						System.out.println(" XmlType: "+tarIndexer.getXmlType());
+						// System.out.println(" XmlType:
+						// "+tarIndexer.getXmlType());
 					}
-					if (fTmp.getName().toLowerCase().equals("bag-info.txt")){
+					if (fTmp.getName().toLowerCase().equals("bag-info.txt")) {
 						tarIndexer.setXmlType(Xmltype.BAGIT.value());
 						tarIndexer.setIdDepositante(checkBagInfo(fTmp));
 					}
@@ -149,7 +143,6 @@ public abstract class Tar {
 				}
 				ris.put(entry.getName(), tarIndexer);
 			}
-			dTmp.delete();
 		} catch (FileNotFoundException e) {
 			throw e;
 		} catch (ArchiveException e) {
@@ -164,8 +157,14 @@ public abstract class Tar {
 			throw e;
 		} finally {
 			try {
-				if (debInputStream != null){
+				if (debInputStream != null) {
 					debInputStream.close();
+				}
+				if (dTmp != null && dTmp.exists()) {
+					if (!Folder.deleteFolder(dTmp)) {
+						throw new IOException(
+								"Problemi nella cancellazione della cartella [" + dTmp.getAbsolutePath() + "]");
+					}
 				}
 			} catch (IOException e) {
 				throw e;
@@ -174,7 +173,7 @@ public abstract class Tar {
 		return ris;
 	}
 
-	private String checkBagInfo(File fTmp) throws FileNotFoundException, IOException { 
+	private String checkBagInfo(File fTmp) throws FileNotFoundException, IOException {
 		FileReader fr = null;
 		BufferedReader br = null;
 		String line = null;
@@ -183,8 +182,8 @@ public abstract class Tar {
 		try {
 			fr = new FileReader(fTmp);
 			br = new BufferedReader(fr);
-			while ((line =br.readLine())!= null){
-				if (line.trim().startsWith("BNCF-user-id:")){
+			while ((line = br.readLine()) != null) {
+				if (line.trim().startsWith("BNCF-user-id:")) {
 					idDepositante = line.replace("BNCF-user-id:", "").trim();
 				}
 			}
@@ -192,12 +191,12 @@ public abstract class Tar {
 			throw e;
 		} catch (IOException e) {
 			throw e;
-		}finally {
+		} finally {
 			try {
-				if (br != null){
+				if (br != null) {
 					br.close();
 				}
-				if(fr != null){
+				if (fr != null) {
 					fr.close();
 				}
 			} catch (IOException e) {
@@ -207,15 +206,15 @@ public abstract class Tar {
 		return idDepositante;
 	}
 
-	private void calcImg(File fImg, TarIndexer tarIndexer) throws InfoException{
+	private void calcImg(File fImg, TarIndexer tarIndexer) throws InfoException {
 		CalcImg calcImg = null;
 
 		try {
 			calcImg = new CalcImg(fImg);
-			log.debug("fImg: "+fImg.getAbsolutePath());
-			log.debug("imageLength: "+calcImg.getImageLength());
-			log.debug("getImageWidth: "+calcImg.getImageWidth());
-			log.debug("getDpi: "+calcImg.getDpi());
+			log.debug("fImg: " + fImg.getAbsolutePath());
+			log.debug("imageLength: " + calcImg.getImageLength());
+			log.debug("getImageWidth: " + calcImg.getImageWidth());
+			log.debug("getDpi: " + calcImg.getDpi());
 			tarIndexer.setImageLength(calcImg.getImageLength());
 			tarIndexer.setImageWidth(calcImg.getImageWidth());
 			tarIndexer.setDpi(calcImg.getDpi());
@@ -224,15 +223,11 @@ public abstract class Tar {
 		}
 	}
 
-	private boolean isImg(String file){
+	private boolean isImg(String file) {
 		boolean ris = false;
-		if (file.endsWith(".jp2") ||
-				file.endsWith(".jpg") ||
-				file.endsWith(".tif") ||
-				file.endsWith(".png") ||
-				file.endsWith(".ico") ||
-				file.endsWith(".gif")){
-			ris  = true;
+		if (file.endsWith(".jp2") || file.endsWith(".jpg") || file.endsWith(".tif") || file.endsWith(".png")
+				|| file.endsWith(".ico") || file.endsWith(".gif")) {
+			ris = true;
 		}
 		return ris;
 	}
@@ -251,13 +246,13 @@ public abstract class Tar {
 			firstLine = br.readLine();
 
 			line = br.readLine();
-			if (line ==null){
+			if (line == null) {
 				firstLine = firstLine.substring(1);
 				pos = firstLine.indexOf("<");
-				if (pos >-1){
+				if (pos > -1) {
 					line = firstLine.substring(pos);
 				}
-			} 
+			}
 			if (line.trim().toLowerCase().startsWith("<mets")) {
 				ris = Xmltype.METS.value();
 			} else if (line.trim().toLowerCase().startsWith("<metadigit")) {
@@ -273,7 +268,7 @@ public abstract class Tar {
 			} else if (line.trim().toLowerCase().startsWith("<mdregistroingressi")) {
 				ris = Xmltype.REGISTRO.value();
 			}
-			if (ris != null){
+			if (ris != null) {
 				validateXsd(fXml, ris);
 			}
 		} catch (FileNotFoundException e) {
@@ -299,32 +294,32 @@ public abstract class Tar {
 
 	protected abstract void validateXsd(File fXml, String ris) throws XsdException;
 
-	public OutputStream read(File fileTar, int offset, int length) throws TarException{
+	public OutputStream read(File fileTar, int offset, int length) throws TarException {
 		FileInputStream is = null;
 		TarArchiveInputStream debInputStream = null;
-		
+
 		byte[] dati = null;
 		ByteArrayOutputStream baos = null;
 
 		try {
 			is = new FileInputStream(fileTar);
-//			is.
-//			debInputStream = new TarArchiveInputStream(is);
-			
+			// is.
+			// debInputStream = new TarArchiveInputStream(is);
+
 			dati = new byte[length];
 			is.skip(offset);
-			
+
 			is.read(dati);
-//			debInputStream.skip(offset);
-//			debInputStream.read(dati);
-//			debInputStream.read(dati, offset, length);
+			// debInputStream.skip(offset);
+			// debInputStream.read(dati);
+			// debInputStream.read(dati, offset, length);
 			baos = new ByteArrayOutputStream();
 			baos.write(dati);
 			baos.flush();
 		} catch (FileNotFoundException e) {
 			throw new TarException(e.getMessage(), e);
-//		} catch (ArchiveException e) {
-//			throw new TarException(e.getMessage(), e);
+			// } catch (ArchiveException e) {
+			// throw new TarException(e.getMessage(), e);
 		} catch (IOException e) {
 			throw new TarException(e.getMessage(), e);
 		} catch (Exception e) {
@@ -332,10 +327,10 @@ public abstract class Tar {
 			throw new TarException(e.getMessage(), e);
 		} finally {
 			try {
-				if (debInputStream != null){
+				if (debInputStream != null) {
 					debInputStream.close();
 				}
-				if (is != null){
+				if (is != null) {
 					is.close();
 				}
 			} catch (IOException e) {

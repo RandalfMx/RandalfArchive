@@ -36,6 +36,7 @@ import org.jwat.warc.WarcReaderFactory;
 import org.jwat.warc.WarcRecord;
 
 import mx.randalf.archive.TarIndexer;
+import mx.randalf.archive.tools.Folder;
 import mx.randalf.tools.MD5Tools;
 import mx.randalf.tools.SHA1Tools;
 import mx.randalf.tools.SHA256Tools;
@@ -113,7 +114,6 @@ public class CheckWarc {
 					ris.put(tarIndexer.getName(), tarIndexer);
 				}
 			}
-			dTmp.delete();
 		} catch (FileNotFoundException e) {
 			throw e;
 		} catch (IOException e) {
@@ -127,6 +127,12 @@ public class CheckWarc {
 				}
 				if (is != null){
 					is.close();
+				}
+				if (dTmp != null && dTmp.exists()){
+					if (!Folder.deleteFolder(dTmp)){
+						throw new IOException(
+								"Problemi nella cancellazione della cartella [" + dTmp.getAbsolutePath() + "]");
+					}
 				}
 			} catch (IOException e) {
 				throw e;
@@ -170,10 +176,8 @@ public class CheckWarc {
 			reader.close();
 			in.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -223,7 +227,6 @@ public class CheckWarc {
 		try {
 			record.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
