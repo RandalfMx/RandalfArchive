@@ -268,9 +268,9 @@ public abstract class Tar {
 			} else if (line.trim().toLowerCase().startsWith("<mdregistroingressi")) {
 				ris = Xmltype.REGISTRO.value();
 			}
-			if (ris != null) {
+//			if (ris != null) {
 				validateXsd(fXml, ris);
-			}
+//			}
 		} catch (FileNotFoundException e) {
 			throw e;
 		} catch (IOException e) {
