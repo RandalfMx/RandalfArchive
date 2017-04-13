@@ -3,13 +3,11 @@
  */
 package mx.randalf.archive;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.im4java.core.InfoException;
 
 import mx.randalf.archive.exception.TarException;
-import mx.randalf.archive.info.Xmltype;
 import mx.randalf.archive.tools.Folder;
 import mx.randalf.digital.img.reader.CalcImg;
 import mx.randalf.tools.MD5Tools;
@@ -128,17 +125,8 @@ public abstract class Tar {
 					if (calcImg && isImg(fTmp.getName().toLowerCase())) {
 						calcImg(fTmp, tarIndexer);
 					}
-					if (fTmp.getName().toLowerCase().endsWith(".xml")
-							|| fTmp.getName().toLowerCase().endsWith(".premis")) {
-						// System.out.print("File: "+fTmp.getName());
-						tarIndexer.setXmlType(checkXml(fTmp));
-						// System.out.println(" XmlType:
-						// "+tarIndexer.getXmlType());
-					}
-					if (fTmp.getName().toLowerCase().equals("bag-info.txt")) {
-						tarIndexer.setXmlType(Xmltype.BAGIT.value());
-						tarIndexer.setIdDepositante(checkBagInfo(fTmp));
-					}
+					
+					checkXmlType(fTmp, tarIndexer);
 					fTmp.delete();
 				}
 				ris.put(entry.getName(), tarIndexer);
@@ -173,38 +161,7 @@ public abstract class Tar {
 		return ris;
 	}
 
-	private String checkBagInfo(File fTmp) throws FileNotFoundException, IOException {
-		FileReader fr = null;
-		BufferedReader br = null;
-		String line = null;
-		String idDepositante = null;
-
-		try {
-			fr = new FileReader(fTmp);
-			br = new BufferedReader(fr);
-			while ((line = br.readLine()) != null) {
-				if (line.trim().startsWith("BNCF-user-id:")) {
-					idDepositante = line.replace("BNCF-user-id:", "").trim();
-				}
-			}
-		} catch (FileNotFoundException e) {
-			throw e;
-		} catch (IOException e) {
-			throw e;
-		} finally {
-			try {
-				if (br != null) {
-					br.close();
-				}
-				if (fr != null) {
-					fr.close();
-				}
-			} catch (IOException e) {
-				throw e;
-			}
-		}
-		return idDepositante;
-	}
+	protected abstract void checkXmlType(File fTmp, TarIndexer tarIndexer) throws FileNotFoundException, IOException, XsdException;
 
 	private void calcImg(File fImg, TarIndexer tarIndexer) throws InfoException {
 		CalcImg calcImg = null;
@@ -231,68 +188,6 @@ public abstract class Tar {
 		}
 		return ris;
 	}
-
-	private String checkXml(File fXml) throws FileNotFoundException, IOException, XsdException {
-		FileReader fr = null;
-		BufferedReader br = null;
-		String ris = null;
-		String line = null;
-		String firstLine = null;
-		int pos = 0;
-
-		try {
-			fr = new FileReader(fXml);
-			br = new BufferedReader(fr);
-			firstLine = br.readLine();
-
-			line = br.readLine();
-			if (line == null) {
-				firstLine = firstLine.substring(1);
-				pos = firstLine.indexOf("<");
-				if (pos > -1) {
-					line = firstLine.substring(pos);
-				}
-			}
-			if (line.trim().toLowerCase().startsWith("<mets")) {
-				ris = Xmltype.METS.value();
-			} else if (line.trim().toLowerCase().startsWith("<metadigit")) {
-				ris = Xmltype.MAG.value();
-			} else if (line.trim().toLowerCase().startsWith("<premis")) {
-				ris = Xmltype.PREMIS.value();
-			} else if (line.trim().toLowerCase().startsWith("<agent")) {
-				ris = Xmltype.AGENT.value();
-			} else if (line.trim().toLowerCase().startsWith("<rights")) {
-				ris = Xmltype.RIGHTS.value();
-			} else if (line.trim().toLowerCase().startsWith("<event")) {
-				ris = Xmltype.EVENT.value();
-			} else if (line.trim().toLowerCase().startsWith("<mdregistroingressi")) {
-				ris = Xmltype.REGISTRO.value();
-			}
-//			if (ris != null) {
-				validateXsd(fXml, ris);
-//			}
-		} catch (FileNotFoundException e) {
-			throw e;
-		} catch (IOException e) {
-			throw e;
-		} catch (XsdException e) {
-			throw e;
-		} finally {
-			try {
-				if (br != null) {
-					br.close();
-				}
-				if (fr != null) {
-					fr.close();
-				}
-			} catch (IOException e) {
-				throw e;
-			}
-		}
-		return ris;
-	}
-
-	protected abstract void validateXsd(File fXml, String ris) throws XsdException;
 
 	public OutputStream read(File fileTar, int offset, int length) throws TarException {
 		FileInputStream is = null;

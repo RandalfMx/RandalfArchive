@@ -42,9 +42,10 @@ public class TarTest {
 		
 		try {
 			tar = new Tar() {
-				
+
 				@Override
-				protected void validateXsd(File fXml, String ris) throws XsdException {
+				protected void checkXmlType(File fTmp, TarIndexer tarIndexer)
+						throws FileNotFoundException, IOException, XsdException {
 					// TODO Auto-generated method stub
 					
 				}
