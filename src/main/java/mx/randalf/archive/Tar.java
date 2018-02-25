@@ -50,7 +50,7 @@ public abstract class Tar {
 	public List<File> decompress(File inputFile, File outputDir)
 			throws FileNotFoundException, IOException, ArchiveException {
 
-		log.info(String.format("Untaring %s to dir %s.", inputFile.getAbsolutePath(), outputDir.getAbsolutePath()));
+		log.info("\n"+String.format("Untaring %s to dir %s.", inputFile.getAbsolutePath(), outputDir.getAbsolutePath()));
 
 		List<File> untaredFiles = new LinkedList<File>();
 		InputStream is = new FileInputStream(inputFile);
@@ -60,16 +60,16 @@ public abstract class Tar {
 		while ((entry = (TarArchiveEntry) debInputStream.getNextEntry()) != null) {
 			File outputFile = new File(outputDir, entry.getName());
 			if (entry.isDirectory()) {
-				log.info(String.format("Attempting to write output directory %s.", outputFile.getAbsolutePath()));
+				log.info("\n"+String.format("Attempting to write output directory %s.", outputFile.getAbsolutePath()));
 				if (!outputFile.exists()) {
-					log.info(String.format("Attempting to create output directory %s.", outputFile.getAbsolutePath()));
+					log.info("\n"+String.format("Attempting to create output directory %s.", outputFile.getAbsolutePath()));
 					if (!outputFile.mkdirs()) {
 						throw new IllegalStateException(
 								String.format("Couldn't create directory %s.", outputFile.getAbsolutePath()));
 					}
 				}
 			} else {
-				log.info(String.format("Creating output file %s.", outputFile.getAbsolutePath()));
+				log.info("\n"+String.format("Creating output file %s.", outputFile.getAbsolutePath()));
 				OutputStream outputFileStream = new FileOutputStream(outputFile);
 				IOUtils.copy(debInputStream, outputFileStream);
 				outputFileStream.close();
@@ -168,10 +168,10 @@ public abstract class Tar {
 
 		try {
 			calcImg = new CalcImg(fImg);
-			log.debug("fImg: " + fImg.getAbsolutePath());
-			log.debug("imageLength: " + calcImg.getImageLength());
-			log.debug("getImageWidth: " + calcImg.getImageWidth());
-			log.debug("getDpi: " + calcImg.getDpi());
+			log.debug("\n"+"fImg: " + fImg.getAbsolutePath());
+			log.debug("\n"+"imageLength: " + calcImg.getImageLength());
+			log.debug("\n"+"getImageWidth: " + calcImg.getImageWidth());
+			log.debug("\n"+"getDpi: " + calcImg.getDpi());
 			tarIndexer.setImageLength(calcImg.getImageLength());
 			tarIndexer.setImageWidth(calcImg.getImageWidth());
 			tarIndexer.setDpi(calcImg.getDpi());

@@ -372,7 +372,6 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 			checkDroid = new CheckDroid(fileDroid);
 			fileCsv = checkDroid.check(fInput);
 
-//			System.out.println("FileCsv: "+fileCsv);
 			fr = new FileReader(fileCsv);
 			csvReader = new CSVReader(fr);
 			csvResult = new Hashtable<Integer, String[]>();
