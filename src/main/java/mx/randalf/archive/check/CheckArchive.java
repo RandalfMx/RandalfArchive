@@ -116,8 +116,8 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 	 * @return Risultato della ricerca
 	 * @throws CheckArchiveException
 	 */
-	public A check(File fInput, File fileTar, Boolean deCompEsito, boolean decompressRequired) throws CheckArchiveException {
-		return check(fInput, fileTar, false, deCompEsito, decompressRequired);
+	public A check(File fInput, File fileTar, Boolean deCompEsito, boolean decompressRequired, File pathTmp) throws CheckArchiveException {
+		return check(fInput, fileTar, false, deCompEsito, decompressRequired, pathTmp);
 	}
 
 	/**
@@ -127,7 +127,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 	 * @return Risultato della ricerca
 	 * @throws CheckArchiveException
 	 */
-	public A check(File fInput, File fileTar, boolean calcImg, Boolean deCompEsito, boolean decompressRequired) 
+	public A check(File fInput, File fileTar, boolean calcImg, Boolean deCompEsito, boolean decompressRequired, File pathTmp) 
 			throws CheckArchiveException {
 		A archive = null;
 		boolean fileGz = false; 
@@ -178,7 +178,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 
 			if (fileGz){
 				this.fileOutput = fileTar;
-				archive = scan(fileTar);
+				archive = scan(fileTar, pathTmp);
 				archive.setNome(fileTar.getParentFile().getName()+File.separator+fileTar.getName());
 				addDigest(archive, fileTar);
 				if (fileTar.getName().endsWith(".warc")){
@@ -194,7 +194,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 				}
 			}else {
 				this.fileOutput = fInput;
-				archive = scan(fInput);
+				archive = scan(fInput, pathTmp);
 				archive.setNome((fileTar==null?fInput.getAbsolutePath():fileTar.getParentFile().getName()+File.separator+fInput.getName()));
 				addDigest(archive, fInput);
 				if (fileTar != null &&
@@ -355,7 +355,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 		}
 	}
 	
-	private A scan(File fInput)
+	private A scan(File fInput, File pathTmp)
 			throws CheckArchiveException {
 		A archive = null;
 		File fileCsv = null;
@@ -370,7 +370,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 
 		try {
 			checkDroid = new CheckDroid(fileDroid);
-			fileCsv = checkDroid.check(fInput);
+			fileCsv = checkDroid.check(fInput, pathTmp);
 
 			fr = new FileReader(fileCsv);
 			csvReader = new CSVReader(fr);
@@ -379,7 +379,11 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 			while ((nextLine = csvReader.readNext()) != null) {
 				if (!nextLine[0].equals("ID")){
 					id = new Integer(nextLine[DroidKey.ID.value()]);
-					idPadre = new Integer(nextLine[DroidKey.PARENT_ID.value()]);
+					if (nextLine[DroidKey.PARENT_ID.value()].trim().equals("")) {
+						idPadre = 0;
+					} else {
+						idPadre = new Integer(nextLine[DroidKey.PARENT_ID.value()]);
+					}
 					csvResult.put(id, nextLine);
 					if (csvPadri.get(idPadre)== null){
 						csvPadri.put(idPadre, new Vector<Integer>());

@@ -40,7 +40,7 @@ public class CheckDroid {
 	 * @return File Csv con il risultato dell'analisi
 	 * @throws CheckArchiveException 
 	 */
-	public File check(File fileAnalize) throws CheckArchiveException {
+	public File check(File fileAnalize, File pathTmp) throws CheckArchiveException {
 		File fileCsv;
 
 		try {
@@ -48,7 +48,7 @@ public class CheckDroid {
 				checkSignature();
 			} catch (CheckArchiveException e) {
 			}
-			fileCsv = checkFile(fileAnalize);
+			fileCsv = checkFile(fileAnalize, pathTmp);
 		} catch (CheckArchiveException e) {
 			throw e;
 		}
@@ -62,7 +62,7 @@ public class CheckDroid {
 	 * @return File Csv con il risultato dell'analisi
 	 * @throws CheckArchiveException
 	 */
-	private File checkFile(File fileAnalize) throws CheckArchiveException {
+	private File checkFile(File fileAnalize, File pathTmp) throws CheckArchiveException {
 		String[] cmd = null;
 		Vector<String> ris = null;
 		File fileDroid = null;
@@ -71,8 +71,9 @@ public class CheckDroid {
 		try {
 			if (fileAnalize.exists()) {
 
-				fileDroid = File.createTempFile("CheckArchive-", ".droid");
-				;
+				fileDroid = File.createTempFile("CheckArchive-", ".droid", 
+						pathTmp);
+
 				cmd = new String[] { this.fileDroid, "-a",
 						fileAnalize.getAbsolutePath(), "-p",
 						fileDroid.getAbsolutePath() };
@@ -80,8 +81,7 @@ public class CheckDroid {
 				ris = execute(cmd);
 
 				if (ris != null) {
-					fileCsv = File.createTempFile("CheckArchive-", ".csv");
-					;
+					fileCsv = File.createTempFile("CheckArchive-", ".csv", pathTmp);
 					cmd = new String[] { this.fileDroid, "-e",
 							fileCsv.getAbsolutePath(), "-p",
 							fileDroid.getAbsolutePath() };
