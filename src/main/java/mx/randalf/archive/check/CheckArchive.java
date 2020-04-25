@@ -17,12 +17,18 @@ import java.util.Vector;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.log4j.Logger;
+import org.im4java.core.InfoException;
+
+import au.com.bytecode.opencsv.CSVReader;
 import mx.randalf.archive.Gzip;
 import mx.randalf.archive.Tar;
 import mx.randalf.archive.TarIndexer;
 import mx.randalf.archive.check.droid.CheckDroid;
 import mx.randalf.archive.check.droid.DroidKey;
 import mx.randalf.archive.check.exception.CheckArchiveException;
+import mx.randalf.archive.check.mrc.CheckMrc;
 import mx.randalf.archive.check.warc.CheckWarc;
 import mx.randalf.archive.info.Archive;
 import mx.randalf.archive.info.DigestType;
@@ -37,12 +43,6 @@ import mx.randalf.tools.SHA256Tools;
 import mx.randalf.tools.Utils;
 import mx.randalf.tools.exception.UtilException;
 import mx.randalf.xsd.exception.XsdException;
-
-import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.log4j.Logger;
-import org.im4java.core.InfoException;
-
-import au.com.bytecode.opencsv.CSVReader;
 
 /**
  * Classe utilizzata per analizzare un file e la ricostruzione dei tipi di
@@ -160,7 +160,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 								gcUnzipStop = new GregorianCalendar();
 							}
 						}
-					} else if (fInput.getName().endsWith(".tar")
+					} else if ((fInput.getName().endsWith(".tar") || fInput.getName().endsWith(".mrc"))
 							&& fileTar != null) {
 						if (!fInput.getAbsolutePath().equals(fileTar.getAbsolutePath())){
 							if (!Utils.copyFileValidate(fInput.getAbsolutePath(), fileTar.getAbsolutePath(), false)){
@@ -183,6 +183,10 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 				addDigest(archive, fileTar);
 				if (fileTar.getName().endsWith(".warc")){
 					archive.setXmltype(Xmltype.WARC);
+					archive.setXmlvalid(Boolean.TRUE);
+				}
+				if (fileTar.getName().endsWith(".mrc")){
+					archive.setXmltype(Xmltype.MRC);
 					archive.setXmlvalid(Boolean.TRUE);
 				}
 
@@ -216,6 +220,10 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 			throw new CheckArchiveException(e.getMessage(), e);
 		} catch (UtilException e) {
 			throw new CheckArchiveException(e.getMessage(), e);
+//		} catch (InterruptedException e) {
+//			throw new CheckArchiveException(e.getMessage(), e);
+//		} catch (GzipException e) {
+//			throw new CheckArchiveException(e.getMessage(), e);
 		}
 		return archive;
 	}
@@ -274,7 +282,9 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 				indexer = tar.indexer(fileTar, calcImg);
 			} else if (fileTar.getName().endsWith(".warc")){
 				indexer = CheckWarc.indexer(fileTar, calcImg);
-			}
+			} else if (fileTar.getName().endsWith(".mrc")){
+				indexer = CheckMrc.indexer(fileTar);
+			} 
 			if (indexer != null){
 				checkTar(null, list, indexer, archiveTar, fileTar.getName().endsWith(".warc"));
 			}

@@ -159,21 +159,12 @@ public class CheckDroid {
 		String msgErr = null;
 		String line = null;
 		Vector<String> ris = null;
+		String firstLine = null;
 
 		try {
 			rt = Runtime.getRuntime();
 			proc = rt.exec(cmd);
 			proc.waitFor();
-
-			isrError = new InputStreamReader(proc.getErrorStream());
-			brError = new BufferedReader(isrError);
-			msgErr = "";
-			while ((line = brError.readLine()) != null) {
-				msgErr += (msgErr.equals("") ? "" : "\n") + line;
-			}
-			if (!msgErr.equals("")) {
-				throw new IOException(msgErr);
-			}
 
 			isrInput = new InputStreamReader(proc.getInputStream());
 			brInput = new BufferedReader(isrInput);
@@ -181,6 +172,31 @@ public class CheckDroid {
 			while ((line = brInput.readLine()) != null) {
 				ris.add(line);
 			}
+
+			isrError = new InputStreamReader(proc.getErrorStream());
+			brError = new BufferedReader(isrError);
+			msgErr = "";
+			while ((line = brError.readLine()) != null) {
+				if (firstLine== null) {
+					firstLine = line;
+				} else {
+					if (line.startsWith("INFO")) {
+						firstLine = null;
+					} else {
+						msgErr += (firstLine==null?"":
+							(
+							  (firstLine.trim().equals("") ? "" : "\n") + 
+							  firstLine.trim()
+							 ));
+						msgErr += (msgErr.equals("") ? "" : "\n") + line;
+						firstLine = null;
+					}
+				}
+			}
+			if (!msgErr.equals("")) {
+				throw new IOException(msgErr);
+			}
+
 		} catch (IOException e) {
 			log.error(e.getMessage(), e);
 			throw new CheckArchiveException(e.getMessage(), e);

@@ -35,6 +35,7 @@
             <xs:enumeration value="event"/>
             <xs:enumeration value="registro"/>
             <xs:enumeration value="warc dc"/>
+            <xs:enumeration value="mrc"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:element name="type">
