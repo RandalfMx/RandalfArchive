@@ -207,8 +207,14 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 					archive.setXmltype(Xmltype.WARC);
 					archive.setXmlvalid(Boolean.TRUE);
 				}
+				if (fileTar.getName().endsWith(".mrc")){
+					archive.setXmltype(Xmltype.MRC);
+					archive.setXmlvalid(Boolean.TRUE);
+				}
 
-				if (fInput.getName().endsWith(".tar") || fInput.getName().endsWith(".warc")){
+				if (fInput.getName().endsWith(".tar") 
+						|| fInput.getName().endsWith(".warc") 
+						|| fInput.getName().endsWith(".mrc")){
 					checkTar(fInput, archive.getArchive(), archive, calcImg);
 				}
 			}
