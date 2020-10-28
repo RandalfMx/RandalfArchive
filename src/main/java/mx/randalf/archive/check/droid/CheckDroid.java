@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import mx.randalf.archive.check.exception.CheckArchiveException;
 
@@ -16,7 +17,7 @@ public class CheckDroid {
 	/**
 	 * Variabile utilizzata per loggare l'applicazione
 	 */
-	private Logger log = Logger.getLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * Variabile utilizzata per indicare la posizione del file Droid

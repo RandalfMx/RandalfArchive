@@ -22,7 +22,8 @@ import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.im4java.core.InfoException;
 
 import mx.randalf.archive.exception.TarException;
@@ -39,7 +40,7 @@ import mx.randalf.xsd.exception.XsdException;
  */
 public abstract class Tar {
 
-	private static Logger log = Logger.getLogger(Tar.class);
+	private static Logger log = LogManager.getLogger(Tar.class);
 
 	/**
 	 * 

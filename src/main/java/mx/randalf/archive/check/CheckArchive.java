@@ -18,7 +18,8 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.im4java.core.InfoException;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -56,7 +57,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 	/**
 	 * Variabile utilizzata per loggare l'applicazione
 	 */
-	private Logger log = Logger.getLogger(getClass());
+	private Logger log = LogManager.getLogger(getClass());
 
 	/**
 	 * Variabile utilizzata per indicare se decomprimere un file Zippato
@@ -207,7 +208,9 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 					archive.setXmltype(Xmltype.WARC);
 					archive.setXmlvalid(Boolean.TRUE);
 				}
-				if (fileTar.getName().endsWith(".mrc")){
+				if (fileTar != null &&
+						fileTar.getName() != null &&
+						fileTar.getName().endsWith(".mrc")){
 					archive.setXmltype(Xmltype.MRC);
 					archive.setXmlvalid(Boolean.TRUE);
 				}
