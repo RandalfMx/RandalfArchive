@@ -43,7 +43,7 @@ public class CheckArchiveTest {
 			check.setUnZip(true);
 			archive = check.check(new File("/mnt/volume1/tmp/test/20140924-unimi.amonline.warc.gz"), 
 					new File("/mnt/volume1/tmp/test/20140924-unimi.amonline.warc"),
-					null,true, null);
+					null,true, null, null);
 			
 			if (archive != null){
 				printArchive(archive, "");

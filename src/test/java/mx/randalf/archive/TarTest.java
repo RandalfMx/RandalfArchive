@@ -1,7 +1,7 @@
 /**
  * 
  */
-package mx.randalf.archive.check;
+package mx.randalf.archive;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -13,8 +13,6 @@ import java.util.Hashtable;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.im4java.core.InfoException;
 
-import mx.randalf.archive.Tar;
-import mx.randalf.archive.TarIndexer;
 import mx.randalf.xsd.exception.XsdException;
 
 /**

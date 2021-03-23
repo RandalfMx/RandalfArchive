@@ -26,6 +26,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import mx.randalf.archive.Gzip;
 import mx.randalf.archive.Tar;
 import mx.randalf.archive.TarIndexer;
+import mx.randalf.archive.Zip;
 import mx.randalf.archive.check.droid.CheckDroid;
 import mx.randalf.archive.check.droid.DroidKey;
 import mx.randalf.archive.check.exception.CheckArchiveException;
@@ -117,8 +118,8 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 	 * @return Risultato della ricerca
 	 * @throws CheckArchiveException
 	 */
-	public A check(File fInput, File fileTar, Boolean deCompEsito, boolean decompressRequired, File pathTmp) throws CheckArchiveException {
-		return check(fInput, fileTar, false, deCompEsito, decompressRequired, pathTmp);
+	public A check(File fInput, File fileTar, Boolean deCompEsito, boolean decompressRequired, File pathTmp, File fTar) throws CheckArchiveException {
+		return check(fInput, fileTar, false, deCompEsito, decompressRequired, pathTmp, fTar);
 	}
 
 	/**
@@ -128,7 +129,7 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 	 * @return Risultato della ricerca
 	 * @throws CheckArchiveException
 	 */
-	public A check(File fInput, File fileTar, boolean calcImg, Boolean deCompEsito, boolean decompressRequired, File pathTmp) 
+	public A check(File fInput, File fileTar, boolean calcImg, Boolean deCompEsito, boolean decompressRequired, File pathTmp, File fTar) 
 			throws CheckArchiveException {
 		A archive = null;
 		boolean fileGz = false; 
@@ -147,6 +148,27 @@ public abstract class CheckArchive<A extends ArchiveImp, T extends Tar> {
 							gcUnzipStart = new GregorianCalendar();
 							try {
 								Gzip.decompress(fInput, fileTar);
+							} catch (FileNotFoundException e) {
+								unzipError = new String[] {
+										e.getMessage()
+								};
+								throw e;
+							} catch (IOException e) {
+								unzipError = new String[] {
+										e.getMessage()
+								};
+								throw e;
+							} finally {
+								gcUnzipStop = new GregorianCalendar();
+							}
+						} else if (fInput.getName().endsWith(".zip")){
+							fileGz = true;
+							if (fileTar== null){
+								throw new CheckArchiveException("Nome del File Tar non indicato");
+							}
+							gcUnzipStart = new GregorianCalendar();
+							try {
+								Zip.convertTar(fInput, fileTar, fTar);
 							} catch (FileNotFoundException e) {
 								unzipError = new String[] {
 										e.getMessage()
