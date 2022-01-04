@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>mx.randalf.archive</groupId>
 	<artifactId>RandalfArchive</artifactId>
-	<version>2.0.5</version>
+	<version>2.0.6</version><!-- 2.0.5 -->
 	<description>Librerie utilizzzate per la identificazione e gestione delle dieverse tipologie di files</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,17 +20,17 @@
 		<dependency>
 			<groupId>mx.randalf.xsd</groupId>
 			<artifactId>RandalfXsd</artifactId>
-			<version>2.0.1</version>
+			<version>2.0.2</version><!-- 2.0.1 -->
 		</dependency>
 		<dependency>
 			<groupId>mx.randalf.tools</groupId>
 			<artifactId>RandalfTools</artifactId>
-			<version>2.0.0</version>
+			<version>2.0.1</version><!-- 2.0.0 -->
 		</dependency>
 		<dependency>
 			<groupId>mx.randalf.digital</groupId>
 			<artifactId>RandalfDigital</artifactId>
-			<version>2.0.2</version>
+			<version>2.0.3</version><!-- 2.0.2 -->
 		</dependency>
 		<dependency>
 			<groupId>org.jwat</groupId>
@@ -48,14 +48,7 @@
 			<version>2.9.1</version>
 		</dependency>
 	</dependencies>
-	<!-- <distributionManagement> <repository> <uniqueVersion>false</uniqueVersion> 
-		<id>sftp-repository-stable</id> <url>scpexe://maven.bncf.lan/var/www/maven.bncf.lan/repository/release</url> 
-		<layout>default</layout> </repository> </distributionManagement> <repositories> 
-		<repository> <snapshots> <enabled>false</enabled> </snapshots> <id>randalf.mx-release</id> 
-		<url>http://maven.bncf.lan/repository/release</url> </repository> </repositories> 
-		<build> <extensions> <extension> <groupId>org.apache.maven.wagon</groupId> 
-		<artifactId>wagon-ssh-external</artifactId> <version>1.0-beta-6</version> 
-		</extension> </extensions> </build> -->
+<!-- 
 	<distributionManagement>
 		<repository>
 			<id>mvn-bncf</id>
@@ -63,4 +56,5 @@
 			<url>http://maven.bncf.firenze.sbn.it/artifactory/libs-release-local</url>
 		</repository>
 	</distributionManagement>
+ -->	
 </project>
